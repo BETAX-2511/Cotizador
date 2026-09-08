@@ -6,6 +6,7 @@
 <title>NIU NIU · Modelo de Exportación</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --purple: #674EA7; --purple-dark: #4E3A82; --purple-tint: #F1EDFA;
@@ -48,6 +49,9 @@
   .card{ background: var(--panel); border:1px solid var(--line); border-radius: 10px; padding: 20px 22px; margin-bottom: 18px; }
   .card h2{ font-size:18px; margin: 0 0 2px; color: var(--purple); }
   .card h2 .en{ font-size:0.55em; color:var(--text-dim); font-style:italic; font-weight:400; }
+  .card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:2px; }
+  .btn-dl{ background:var(--purple-tint); color:var(--purple-dark); border:1px solid var(--purple); border-radius:7px; padding:7px 13px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Inter'; white-space:nowrap; }
+  .btn-dl:hover{ background:var(--purple); color:#fff; }
   .card .desc{ font-size:12px; color: var(--text-dim); margin: 0 0 16px; font-style: italic; }
 
   label{ display:block; font-size:12px; color:var(--text); margin-bottom:5px; }
@@ -146,7 +150,8 @@
   <!-- TAB: FX -->
   <div class="panel active" id="tab-fx">
     <div class="card">
-      <h2><span class="es">Tipo de Cambio</span> <span class="en">Exchange Rate</span></h2>
+      <div class="card-head"><h2><span class="es">Tipo de Cambio</span> <span class="en">Exchange Rate</span></h2>
+      <button class="btn-dl" onclick="exportFX()">⬇ Descargar Excel / Download Excel</button></div>
       <p class="desc">MXN/USD — fuente: Banco de México (Banxico), serie SF43718 (FIX)</p>
       <div class="fx-box">
         <div><div class="fx-value" id="fxDisplay">$16.90</div><div class="dim">pesos por dólar · pesos per dollar</div></div>
@@ -165,7 +170,8 @@
   <!-- TAB: PRECIOS -->
   <div class="panel" id="tab-precios">
     <div class="card">
-      <h2><span class="es">Precios de Compra y Venta</span> <span class="en">Purchase &amp; Sale Prices</span></h2>
+      <div class="card-head"><h2><span class="es">Precios de Compra y Venta</span> <span class="en">Purchase &amp; Sale Prices</span></h2>
+      <button class="btn-dl" onclick="exportPrecios()">⬇ Descargar Excel / Download Excel</button></div>
       <p class="desc">Tarifario general — independiente del Análisis de Exportación y de la Bitácora.</p>
       <div class="scroll-x"><table>
         <thead><tr>
@@ -186,8 +192,15 @@
   <!-- TAB: CATALOGO -->
   <div class="panel" id="tab-catalogo">
     <div class="card">
-      <h2><span class="es">Catálogo de Materiales</span> <span class="en">Materials Catalog</span></h2>
-      <p class="desc">Baterías + equipos electrónicos. Catálogo abierto: puedes agregar más categorías.</p>
+      <div class="card-head"><h2><span class="es">Catálogo de Materiales</span> <span class="en">Materials Catalog</span></h2>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-dl" onclick="exportCatalogo()">⬇ Descargar Excel / Download Excel</button>
+        <button class="btn-dl" onclick="downloadTemplateCatalogo()">📄 Plantilla / Template</button>
+        <button class="btn-dl" onclick="document.getElementById('fileCatalogo').click()">⬆ Carga masiva / Bulk upload</button>
+        <input type="file" id="fileCatalogo" accept=".xlsx,.xls" style="display:none;" onchange="uploadCatalogo(event)">
+      </div></div>
+      <p class="desc">Baterías + equipos electrónicos. Catálogo abierto: puedes agregar más categorías, o bajar la plantilla, llenarla y subirla de golpe.</p>
+      <div class="status" id="catalogoUploadStatus"></div>
       <div class="scroll-x"><table>
         <thead><tr>
           <th><span class="bi"><span class="es">Categoría</span><span class="en">Category</span></span></th>
@@ -209,8 +222,15 @@
   <!-- TAB: BITACORA -->
   <div class="panel" id="tab-bitacora">
     <div class="card">
-      <h2><span class="es">Bitácora de Compra de E-waste</span> <span class="en">E-waste Purchase Log</span></h2>
-      <p class="desc">Una compra puede tener varios materiales (mismo Folio en varias tarjetas).</p>
+      <div class="card-head"><h2><span class="es">Bitácora de Compra de E-waste</span> <span class="en">E-waste Purchase Log</span></h2>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-dl" onclick="exportBitacora()">⬇ Descargar Excel / Download Excel</button>
+        <button class="btn-dl" onclick="downloadTemplateBitacora()">📄 Plantilla / Template</button>
+        <button class="btn-dl" onclick="document.getElementById('fileBitacora').click()">⬆ Carga masiva / Bulk upload</button>
+        <input type="file" id="fileBitacora" accept=".xlsx,.xls" style="display:none;" onchange="uploadBitacora(event)">
+      </div></div>
+      <p class="desc">Una compra puede tener varios materiales (mismo Folio en varias tarjetas). Baja la plantilla, llénala y súbela para cargar muchas líneas de golpe.</p>
+      <div class="status" id="bitacoraUploadStatus"></div>
 
       <div class="card" style="background:var(--purple-tint); border:none; padding:14px 16px; margin-bottom:16px;">
         <div class="bi" style="margin-bottom:8px;"><span class="es" style="font-weight:700; color:var(--purple-dark);">Modo de captura</span><span class="en">Entry mode</span></div>
@@ -270,7 +290,8 @@
   <!-- TAB: EXPORT ANALYSIS -->
   <div class="panel" id="tab-export">
     <div class="card">
-      <h2><span class="es">Análisis de Exportación</span> <span class="en">Export Analysis</span></h2>
+      <div class="card-head"><h2><span class="es">Análisis de Exportación</span> <span class="en">Export Analysis</span></h2>
+      <button class="btn-dl" onclick="exportExportAnalysis()">⬇ Descargar Excel / Download Excel</button></div>
       <p class="desc">Embarque de referencia: agosto 2026 · Reference shipment: August 2026</p>
       <div class="row3">
         <div class="field"><label class="bi"><span class="es">Peso de batería embarcado (kg)</span><span class="en">Battery weight shipped (kg)</span></label><input type="number" id="kgEmbarque" value="18555" onchange="calcExport()"></div>
@@ -314,7 +335,8 @@
   <!-- TAB: COSTEO POR DISTANCIA -->
   <div class="panel" id="tab-distancia">
     <div class="card">
-      <h2><span class="es">Costeo por Distancia</span> <span class="en">Distance-based Costing</span></h2>
+      <div class="card-head"><h2><span class="es">Costeo por Distancia</span> <span class="en">Distance-based Costing</span></h2>
+      <button class="btn-dl" onclick="exportDistancia()">⬇ Descargar Excel / Download Excel</button></div>
       <p class="desc">Modelo independiente — no se combina con los gastos logísticos fijos de Exportación.</p>
 
       <div class="row2">
@@ -322,7 +344,15 @@
         <div class="field"><label class="bi"><span class="es">Lugar de llegada</span><span class="en">Destination</span></label><input type="text" id="destinoTxt" value="Nuevo Laredo, Tamps."></div>
       </div>
 
-      <div class="field" style="max-width:420px;">
+      <div class="field" style="max-width:460px; background:var(--purple-tint); padding:14px; border-radius:8px;">
+        <label class="bi"><span class="es" style="font-weight:700;">Opción gratuita — sin API key (OpenStreetMap)</span><span class="en">Free option — no API key (OpenStreetMap)</span></label>
+        <button class="btn small" style="margin-top:6px;" onclick="calcularDistanciaOSM()">🌍 Calcular km gratis / Calculate km free</button>
+        <div class="status" id="osmStatus"></div>
+        <div class="foot-note" style="margin-top:6px;">Usa Nominatim + OSRM (servidores públicos de la comunidad OpenStreetMap). No necesita key ni facturación, pero es un servicio comunitario sin garantía de disponibilidad — para uso ligero está bien.
+          <span class="en-line">Uses Nominatim + OSRM (public OpenStreetMap community servers). No key or billing needed, but it's a community service with no uptime guarantee — fine for light use.</span></div>
+      </div>
+
+      <div class="field" style="max-width:420px; margin-top:14px;">
         <label class="bi"><span class="es">Google Maps API key (opcional, solo en memoria)</span><span class="en">Google Maps API key (optional, memory only)</span></label>
         <input type="text" id="gmapsKey" placeholder="Pega tu API key aquí para intentar autocalcular">
         <button class="btn small ghost" style="margin-top:8px;" onclick="calcularDistanciaGoogle()">Calcular km con Google Maps / Calculate km with Google Maps</button>
@@ -358,7 +388,8 @@
   <!-- TAB: ACOPIO TEMPORAL -->
   <div class="panel" id="tab-acopio">
     <div class="card">
-      <h2><span class="es">Acopio Temporal</span> <span class="en">Temporary Storage</span></h2>
+      <div class="card-head"><h2><span class="es">Acopio Temporal</span> <span class="en">Temporary Storage</span></h2>
+      <button class="btn-dl" onclick="exportAcopio()">⬇ Descargar Excel / Download Excel</button></div>
       <p class="desc">Aplica a los kg que exceden el embarque programado (19,500 kg)</p>
       <div class="row3">
         <div class="field"><label class="bi"><span class="es">Tarifa (MXN/kg/mes nominal)</span><span class="en">Rate (MXN/kg/nominal month)</span></label><input type="number" id="tarifaAcopio" value="1.20" step="0.01" onchange="calcAcopio()"></div>
@@ -434,13 +465,13 @@ let BITACORA = [
 ];
 
 const LOGISTICS = [
-  {name:"Domestic Transportation (Mexico)", amt:13949.00},
-  {name:"Pallets, Material Handling &amp; Tagging", amt:3667.00},
-  {name:"HazWaste Transport (Export Warehouse → border)", amt:39568.00},
-  {name:"Customs Agents", amt:20500.00},
-  {name:"Delivery to US Border Warehouse", amt:21280.00},
-  {name:"Operational Travel Expenses", amt:8500.00},
-  {name:"Otros (gastos de traslado a frontera) / Other (border crossing expenses)", amt:0.00},
+  {es:"Transporte Nacional (México)", en:"Domestic Transportation (Mexico)", amt:13949.00},
+  {es:"Tarimas, Manejo de Materiales y Etiquetado", en:"Pallets, Material Handling & Tagging", amt:3667.00},
+  {es:"Transporte de Residuos Peligrosos (Almacén de Exportación → frontera)", en:"HazWaste Transport (Export Warehouse → border)", amt:39568.00},
+  {es:"Agentes Aduanales", en:"Customs Agents", amt:20500.00},
+  {es:"Entrega a Almacén en Frontera EE.UU.", en:"Delivery to US Border Warehouse", amt:21280.00},
+  {es:"Gastos de Viaje Operativos", en:"Operational Travel Expenses", amt:8500.00},
+  {es:"Otros (gastos de traslado a frontera)", en:"Other (border crossing expenses)", amt:0.00},
 ];
 let ACQUISITION = 74220.00;
 let VENTA_RATE = 20.91;
@@ -466,10 +497,12 @@ document.querySelectorAll('.tab').forEach(t => {
 async function fetchBanxico(){
   const statusEl = document.getElementById('fxStatus');
   statusEl.textContent = 'Consultando Banxico...'; statusEl.className = 'status warn';
-  const TOKEN = 'fd0a6229de7e0ffde599711376f67a297508e1f68369e4b0decd4e1590a498f2';
-  const url = 'https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43718/datos/oportuno';
+  const TOKEN = '145a435e703902c548f702dcbe608e23d04bbc1d10ff72c641b2156ac2f8d151';
+  // El token va como parametro en la URL (no como header Bmx-Token): asi la peticion es un GET
+  // simple sin preflight CORS, que es lo que fallaba antes ("Failed to fetch").
+  const url = 'https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43718/datos/oportuno?token=' + TOKEN + '&mediaType=json';
   try{
-    const res = await fetch(url, { headers: { 'Bmx-Token': TOKEN, 'Accept': 'application/json' } });
+    const res = await fetch(url);
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const dato = data.bmx.series[0].datos[0];
@@ -478,7 +511,7 @@ async function fetchBanxico(){
     document.getElementById('fxDisplay').textContent = '$' + FX.toFixed(4);
     statusEl.textContent = 'Actualizado ✓ · fecha: ' + dato.fecha; statusEl.className = 'status ok';
   }catch(err){
-    statusEl.textContent = 'No se pudo conectar (bloqueo de red/CORS). Actualiza manualmente. · ' + err.message;
+    statusEl.textContent = 'No se pudo conectar (bloqueo de red del entorno donde abriste el archivo). Actualiza manualmente. · ' + err.message;
     statusEl.className = 'status err';
   }
   recalcAll();
@@ -681,14 +714,14 @@ function calcExport(){
     <td class="input-cell" colspan="2"><input type="number" step="0.01" value="${COMPRA_RATE.toFixed(2)}" onchange="COMPRA_RATE=parseFloat(this.value)||0;calcExport();"></td>
     <td colspan="3"></td></tr>`;
   ACQUISITION = COMPRA_RATE * kgBat;
-  body.innerHTML += `<tr><td>Acquisition Cost (Subtotal) — costo de adquisición</td>
+  body.innerHTML += `<tr><td><span class="bi"><span class="es" style="font-weight:400;">Costo de Adquisición (Subtotal)</span><span class="en">Acquisition Cost (Subtotal)</span></span></td>
     <td class="num">${fmtMXN(ACQUISITION)}</td><td class="num">${fmtUSD(ACQUISITION/FX)}</td>
     <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(COMPRA_RATE)}</td><td class="num">${fmtUSD(COMPRA_RATE/FX)}</td></tr>`;
   body.innerHTML += `<tr><td class="dim" style="font-size:11px;" colspan="6">↳ este precio de compra viene de la Bitácora/Catálogo cuando envías líneas seleccionadas; puedes editarlo aquí manualmente también · this purchase rate comes from Bitácora/Catálogo when you send checked lines; you can also edit it here directly</td></tr>`;
 
   body.innerHTML += `<tr class="section-row"><td colspan="6">GASTOS LOGÍSTICOS (fijos) / LOGISTICS (fixed)</td></tr>`;
   let logisticsTotal = 0;
-  LOGISTICS.forEach((item, i) => { logisticsTotal += item.amt; body.innerHTML += rowHTML(item.name, item.amt, kgBat, 'log'+i); });
+  LOGISTICS.forEach((item, i) => { logisticsTotal += item.amt; body.innerHTML += rowHTML(item.es, item.en, item.amt, kgBat, 'log'+i); });
   body.innerHTML += `<tr style="font-weight:600; font-style:italic;">
     <td>Subtotal logística / Logistics subtotal</td>
     <td class="num">${fmtMXN(logisticsTotal)}</td><td class="num">${fmtUSD(logisticsTotal/FX)}</td>
@@ -720,9 +753,9 @@ function calcExport(){
   else if(pct >= 0){ pctEl.style.color = 'var(--amber-warn)'; flagEl.textContent = '🟡'; }
   else { pctEl.style.color = 'var(--red)'; flagEl.textContent = '🔴'; }
 }
-function rowHTML(name, amt, kg, id){
+function rowHTML(esName, enName, amt, kg, id){
   const perKgMXN = kg > 0 ? amt/kg : 0;
-  return `<tr><td>${name}</td>
+  return `<tr><td><span class="bi"><span class="es" style="font-weight:400;">${esName}</span><span class="en">${enName}</span></span></td>
     <td class="input-cell"><input type="number" step="0.01" value="${amt.toFixed(2)}" onchange="updateAmount('${id}', this.value)"></td>
     <td class="num">${fmtUSD(amt/FX)}</td><td class="num">${fmtKg(kg)}</td>
     <td class="num">${fmtMXN(perKgMXN)}</td><td class="num">${fmtUSD(perKgMXN/FX)}</td></tr>`;
@@ -734,6 +767,42 @@ function updateAmount(id, val){
 }
 
 // ---------- COSTEO POR DISTANCIA ----------
+async function calcularDistanciaOSM(){
+  const statusEl = document.getElementById('osmStatus');
+  const origin = document.getElementById('origenTxt').value.trim();
+  const destination = document.getElementById('destinoTxt').value.trim();
+  if(!origin || !destination){ statusEl.textContent = 'Captura origen y destino / Enter origin and destination.'; statusEl.className='status warn'; return; }
+  statusEl.textContent = 'Buscando coordenadas... / Geocoding...'; statusEl.className = 'status warn';
+  try{
+    const geocode = async (q) => {
+      const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q);
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('Nominatim HTTP ' + res.status);
+      const data = await res.json();
+      if(!data.length) throw new Error('No se encontró "' + q + '" / "' + q + '" not found');
+      return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+    };
+    const o = await geocode(origin);
+    // Nominatim pide max 1 req/seg
+    await new Promise(r => setTimeout(r, 1100));
+    const d = await geocode(destination);
+
+    statusEl.textContent = 'Calculando ruta... / Calculating route...'; statusEl.className = 'status warn';
+    const routeUrl = `https://router.project-osrm.org/route/v1/driving/${o.lon},${o.lat};${d.lon},${d.lat}?overview=false`;
+    const routeRes = await fetch(routeUrl);
+    if(!routeRes.ok) throw new Error('OSRM HTTP ' + routeRes.status);
+    const routeData = await routeRes.json();
+    if(routeData.code !== 'Ok') throw new Error('OSRM: ' + routeData.code);
+    const km = routeData.routes[0].distance / 1000;
+    document.getElementById('kmManual').value = km.toFixed(1);
+    statusEl.textContent = `Distancia obtenida ✓ ${km.toFixed(1)} km (OpenStreetMap)`; statusEl.className = 'status ok';
+    calcDistancia();
+  }catch(err){
+    statusEl.textContent = 'No se pudo calcular (servicio no disponible ahora, o bloqueo de red del entorno). Usa el campo manual. · ' + err.message;
+    statusEl.className = 'status err';
+  }
+}
+
 async function calcularDistanciaGoogle(){
   const key = document.getElementById('gmapsKey').value.trim();
   const statusEl = document.getElementById('gmapsStatus');
@@ -793,6 +862,233 @@ function calcAcopio(){
   const costoMXN = tarifa * kg * meses;
   document.getElementById('acopioMXN').textContent = fmtMXN(costoMXN);
   document.getElementById('acopioUSD').textContent = fmtUSD(costoMXN / FX);
+}
+
+// ---------- DESCARGA A EXCEL (SheetJS, por pestaña) ----------
+function downloadSheet(filename, sheetName, aoa){
+  try{
+    const wsx = XLSX.utils.aoa_to_sheet(aoa);
+    const wbx = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wbx, wsx, sheetName);
+    XLSX.writeFile(wbx, filename);
+  }catch(err){
+    alert('No se pudo generar el Excel (posible bloqueo de red al cargar la librería). / Could not generate the Excel file (possible network block loading the library).\n' + err.message);
+  }
+}
+
+function exportFX(){
+  const aoa = [
+    ["Tipo de Cambio / Exchange Rate"], [],
+    ["Concepto / Item", "Valor / Value"],
+    ["Tipo de cambio MXN/USD / Exchange rate MXN/USD", FX],
+    ["Fuente / Source", "Banco de México · SIE API · Serie SF43718 (FIX)"],
+  ];
+  downloadSheet('NIUNIU_TipoDeCambio.xlsx', 'TipoDeCambio', aoa);
+}
+
+function exportPrecios(){
+  const aoa = [["Química / Chemistry","Tipo / Type","Compra MXN/kg / Purchase MXN/kg","Compra USD/kg / Purchase USD/kg","Venta MXN/kg / Sale MXN/kg","Venta USD/kg / Sale USD/kg"]];
+  PRICING.forEach(p => aoa.push([p.chem, p.tipo, p.compra, +(p.compra/FX).toFixed(4), p.venta, +(p.venta/FX).toFixed(4)]));
+  downloadSheet('NIUNIU_Precios.xlsx', 'Precios', aoa);
+}
+
+function exportCatalogo(){
+  const aoa = [["Categoría / Category","Tipo / Type","Compra MXN/kg / Purchase MXN/kg","Compra USD/kg / Purchase USD/kg","Venta MXN/kg / Sale MXN/kg","Venta USD/kg / Sale USD/kg"]];
+  CATALOGO.forEach(p => aoa.push([p.chem, p.tipo, p.compra, +(p.compra/FX).toFixed(4), p.venta, +(p.venta/FX).toFixed(4)]));
+  downloadSheet('NIUNIU_Catalogo.xlsx', 'Catalogo', aoa);
+}
+
+function downloadTemplateCatalogo(){
+  const aoa = [
+    ["Categoría / Category","Tipo / Type","Compra MXN/kg / Purchase MXN/kg","Venta MXN/kg / Sale MXN/kg"],
+    ["EJEMPLO - Bocinas Bluetooth / EXAMPLE - Bluetooth speakers","General",3.50,12.00],
+  ];
+  downloadSheet('NIUNIU_Plantilla_Catalogo.xlsx', 'Plantilla', aoa);
+}
+
+function uploadCatalogo(evt){
+  const file = evt.target.files[0];
+  const statusEl = document.getElementById('catalogoUploadStatus');
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const wbx = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const ws = wbx.Sheets[wbx.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      let n = 0;
+      for(let i=1; i<rows.length; i++){
+        const row = rows[i];
+        if(!row || !row[0] || String(row[0]).trim()==='') continue;
+        if(String(row[0]).toUpperCase().includes('EJEMPLO') || String(row[0]).toUpperCase().includes('EXAMPLE')) continue;
+        CATALOGO.push({
+          chem: String(row[0]).trim(),
+          tipo: row[1] ? String(row[1]).trim() : 'General',
+          compra: parseFloat(row[2]) || 0,
+          venta: parseFloat(row[3]) || 0,
+        });
+        n++;
+      }
+      renderCatalogo(); renderBitacora();
+      statusEl.textContent = `Importadas ${n} categoría(s) ✓ / ${n} categories imported ✓`;
+      statusEl.className = 'status ok';
+    }catch(err){
+      statusEl.textContent = 'Error al leer el archivo / Error reading file: ' + err.message;
+      statusEl.className = 'status err';
+    }
+    evt.target.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function exportBitacora(){
+  const aoa = [["Incluir / Include","Fecha / Date","Empresa / Company","Transporte / Transport","Centro de Acopio / Collection Center","Folio / Reference #","Material","Peso kg / Weight kg","Compra MXN/kg","Venta MXN/kg","Total Compra MXN","Total Compra USD","Total Venta MXN","Total Venta USD"]];
+  BITACORA.forEach(row => {
+    const mat = CATALOGO[row.matIdx] || CATALOGO[0];
+    const tc = row.peso*mat.compra, tv = row.peso*mat.venta;
+    aoa.push([row.incl?'Sí':'No', row.fecha, row.empresa, row.transporte, row.acopio, row.folio, mat.chem+' | '+mat.tipo, row.peso, mat.compra, mat.venta, tc, +(tc/FX).toFixed(2), tv, +(tv/FX).toFixed(2)]);
+  });
+  let sumKg=0, sumC=0, sumV=0;
+  BITACORA.forEach(row => { if(row.incl){ const mat=CATALOGO[row.matIdx]||CATALOGO[0]; sumKg+=row.peso; sumC+=row.peso*mat.compra; sumV+=row.peso*mat.venta; } });
+  aoa.push([]);
+  aoa.push(['TOTALES (solo Incluir=Sí) / TOTALS (Include=Yes only)','','','','','','', sumKg,'','', sumC, +(sumC/FX).toFixed(2), sumV, +(sumV/FX).toFixed(2)]);
+  aoa.push([]);
+  aoa.push(['Métrica de transporte (Costeo por Distancia) / Transport metric (Distance Costing)']);
+  const kgMXN = sumKg > 0 ? DIST_MONTO/sumKg : 0;
+  aoa.push(['$/kg MXN', kgMXN, '$/kg USD', kgMXN/FX]);
+  aoa.push(['$/(kg·km) MXN', DIST_KM_ADJ>0?kgMXN/DIST_KM_ADJ:0, '$/(kg·km) USD', DIST_KM_ADJ>0?(kgMXN/FX)/DIST_KM_ADJ:0]);
+  downloadSheet('NIUNIU_Bitacora.xlsx', 'Bitacora', aoa);
+}
+
+function downloadTemplateBitacora(){
+  const aoa = [
+    ["Fecha / Date","Empresa / Company","Transporte / Transport","Centro de Acopio / Collection Center","Folio / Reference #","Categoría / Category","Tipo / Type","Peso kg / Weight kg"],
+    ["EJEMPLO - 2026-08-05 / EXAMPLE","Proveedor S.A. de C.V.","Camión propio / Own truck","CDMX Norte","FOL-0001","NMC EVs","NORMAL / Estándar",500],
+  ];
+  downloadSheet('NIUNIU_Plantilla_Bitacora.xlsx', 'Plantilla', aoa);
+}
+
+function uploadBitacora(evt){
+  const file = evt.target.files[0];
+  const statusEl = document.getElementById('bitacoraUploadStatus');
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const wbx = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const ws = wbx.Sheets[wbx.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+      let n = 0, sinMatch = 0;
+      for(let i=1; i<rows.length; i++){
+        const row = rows[i];
+        if(!row || !row[0] || String(row[0]).trim()==='') continue;
+        if(String(row[0]).toUpperCase().includes('EJEMPLO') || String(row[0]).toUpperCase().includes('EXAMPLE')) continue;
+        const cat = row[5] ? String(row[5]).trim() : '';
+        const tipo = row[6] ? String(row[6]).trim() : '';
+        let matIdx = CATALOGO.findIndex(c => c.chem.trim()===cat && c.tipo.trim()===tipo);
+        if(matIdx < 0){ matIdx = 0; sinMatch++; }
+        BITACORA.push({
+          incl:false,
+          fecha: row[0] ? String(row[0]).trim() : '',
+          empresa: row[1] ? String(row[1]).trim() : '',
+          transporte: row[2] ? String(row[2]).trim() : '',
+          acopio: row[3] ? String(row[3]).trim() : '',
+          folio: row[4] ? String(row[4]).trim() : '',
+          matIdx: matIdx,
+          peso: parseFloat(row[7]) || 0,
+        });
+        n++;
+      }
+      renderBitacora();
+      let msg = `Importadas ${n} línea(s) ✓ / ${n} lines imported ✓`;
+      if(sinMatch > 0) msg += ` — ${sinMatch} sin coincidencia exacta de Categoría/Tipo en el Catálogo (quedaron con la primera del catálogo, revísalas) / ${sinMatch} without an exact Category/Type match in the Catalog (defaulted to the first item, please review)`;
+      statusEl.textContent = msg;
+      statusEl.className = sinMatch>0 ? 'status warn' : 'status ok';
+    }catch(err){
+      statusEl.textContent = 'Error al leer el archivo / Error reading file: ' + err.message;
+      statusEl.className = 'status err';
+    }
+    evt.target.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function exportExportAnalysis(){
+  const kgBat = parseFloat(document.getElementById('kgEmbarque').value) || 0;
+  const kgPack = parseFloat(document.getElementById('kgEmpaque').value) || 0;
+  const acquisition = COMPRA_RATE * kgBat;
+  let logisticsTotal = 0; LOGISTICS.forEach(it => logisticsTotal += it.amt);
+  const costoTotal = acquisition + logisticsTotal;
+  const ventaTotal = VENTA_RATE * kgBat;
+  const margen = ventaTotal - costoTotal;
+  const pct = ventaTotal !== 0 ? margen/ventaTotal : 0;
+
+  const aoa = [
+    ["Análisis de Exportación / Export Analysis"], [],
+    ["Peso de batería embarcado (kg) / Battery weight shipped (kg)", kgBat],
+    ["Empaque adicional (kg) / Additional packaging (kg)", kgPack],
+    [],
+    ["Concepto / Item","Monto MXN / Amount MXN","Monto USD / Amount USD","Base (kg)","$/kg MXN","$/kg USD"],
+    ["Precio de compra (MXN/kg) / Purchase price", COMPRA_RATE, "", "", "", ""],
+    ["Acquisition Cost (Subtotal) / Costo de Adquisición", acquisition, +(acquisition/FX).toFixed(2), kgBat, COMPRA_RATE, +(COMPRA_RATE/FX).toFixed(4)],
+  ];
+  LOGISTICS.forEach(it => aoa.push([`${it.es} / ${it.en}`, it.amt, +(it.amt/FX).toFixed(2), kgBat, +(kgBat?it.amt/kgBat:0).toFixed(4), +(kgBat?(it.amt/kgBat)/FX:0).toFixed(4)]));
+  aoa.push(["Subtotal logística / Logistics subtotal", logisticsTotal, +(logisticsTotal/FX).toFixed(2), kgBat, +(kgBat?logisticsTotal/kgBat:0).toFixed(4), +(kgBat?(logisticsTotal/kgBat)/FX:0).toFixed(4)]);
+  aoa.push(["COSTO TOTAL / TOTAL COST", costoTotal, +(costoTotal/FX).toFixed(2), kgBat, +(kgBat?costoTotal/kgBat:0).toFixed(4), +(kgBat?(costoTotal/kgBat)/FX:0).toFixed(4)]);
+  aoa.push([]);
+  aoa.push(["Precio de venta (MXN/kg) / Sale price", VENTA_RATE]);
+  aoa.push(["Venta total del embarque / Total shipment sale", ventaTotal, +(ventaTotal/FX).toFixed(2), kgBat, VENTA_RATE, +(VENTA_RATE/FX).toFixed(4)]);
+  aoa.push([]);
+  aoa.push(["MARGEN / MARGIN", margen, +(margen/FX).toFixed(2), kgBat, +(kgBat?margen/kgBat:0).toFixed(4), +(kgBat?(margen/kgBat)/FX:0).toFixed(4)]);
+  aoa.push(["% Margen sobre Venta / Margin % over Sale", (pct*100).toFixed(1)+'%']);
+  downloadSheet('NIUNIU_AnalisisExportacion.xlsx', 'Exportacion', aoa);
+}
+
+function exportDistancia(){
+  const origen = document.getElementById('origenTxt').value;
+  const destino = document.getElementById('destinoTxt').value;
+  const km = parseFloat(document.getElementById('kmManual').value) || 0;
+  const aplicar = document.getElementById('aplicar15').value === 'si';
+  const kmAdj = aplicar ? km*1.15 : km;
+  const peso = parseFloat(document.getElementById('pesoDist').value) || 0;
+  const monto = parseFloat(document.getElementById('montoDist').value) || 0;
+  const kgMXN = peso>0 ? monto/peso : 0;
+  const kgUSD = kgMXN/FX;
+  const kgkmMXN = kmAdj>0 ? kgMXN/kmAdj : 0;
+  const kgkmUSD = kmAdj>0 ? kgUSD/kmAdj : 0;
+  const aoa = [
+    ["Costeo por Distancia / Distance-based Costing"], [],
+    ["Lugar de salida / Origin", origen],
+    ["Lugar de llegada / Destination", destino],
+    ["Kilómetros / Kilometers", km],
+    ["¿Aplicar 15% adicional? / Apply extra 15%?", aplicar?'Sí / Yes':'No'],
+    ["Km ajustados / Adjusted km", +kmAdj.toFixed(2)],
+    ["Peso (kg) / Weight (kg)", peso],
+    ["Monto total de transporte (MXN) / Total transport amount (MXN)", monto],
+    [],
+    ["$/kg MXN", +kgMXN.toFixed(4)],
+    ["$/kg USD", +kgUSD.toFixed(4)],
+    ["$/(kg·km) MXN", +kgkmMXN.toFixed(4)],
+    ["$/(kg·km) USD", +kgkmUSD.toFixed(4)],
+  ];
+  downloadSheet('NIUNIU_CosteoDistancia.xlsx', 'CosteoDistancia', aoa);
+}
+
+function exportAcopio(){
+  const tarifa = parseFloat(document.getElementById('tarifaAcopio').value) || 0;
+  const kg = parseFloat(document.getElementById('kgExcedente').value) || 0;
+  const meses = parseFloat(document.getElementById('mesesAcopio').value) || 0;
+  const costoMXN = tarifa*kg*meses;
+  const aoa = [
+    ["Acopio Temporal / Temporary Storage"], [],
+    ["Tarifa (MXN/kg/mes nominal) / Rate (MXN/kg/nominal month)", tarifa],
+    ["Kg excedentes en acopio / Excess kg in storage", kg],
+    ["Meses facturables / Billable months", meses],
+    [],
+    ["Costo de acopio temporal (MXN) / Storage cost (MXN)", costoMXN],
+    ["Costo de acopio temporal (USD) / Storage cost (USD)", +(costoMXN/FX).toFixed(2)],
+  ];
+  downloadSheet('NIUNIU_AcopioTemporal.xlsx', 'AcopioTemporal', aoa);
 }
 
 function recalcAll(){ renderPricing(); renderCatalogo(); renderBitacora(); calcExport(); calcDistancia(); calcAcopio(); }
