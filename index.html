@@ -13,14 +13,14 @@
     --bg: #FAF9FB; --panel: #FFFFFF; --line: #E4E1EC;
     --text: #211B2E; --text-dim: #726C81;
     --green: #2E8B6F; --amber-warn: #B5822A; --red: #B0473D;
-    --th-en: #8F7FBD;
+    --th-en: #8F7FBD; --usd-blue: #1D5FD6;
   }
   html[data-theme="dark"]{
     --purple: #9B87D9; --purple-dark: #C4B5E8; --purple-tint: #2C2650;
     --bg: #17142A; --panel: #221D3B; --line: #3A3260;
     --text: #EFEAFB; --text-dim: #A79FC9;
     --green: #4FC79A; --amber-warn: #E0B84C; --red: #E88579;
-    --th-en: #6F5FA0;
+    --th-en: #6F5FA0; --usd-blue: #6FA1F5;
   }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--bg); color:var(--text); font-family:'Inter', sans-serif; line-height:1.45; transition: background .2s, color .2s; }
@@ -77,6 +77,8 @@
   .input-cell input, .input-cell select{ padding:5px 7px; font-size:12.5px; }
   .dim{ color: var(--text-dim); font-size:11.5px; }
   .num{ text-align:right; font-family:'IBM Plex Mono', monospace; }
+  .usd-color{ color: var(--usd-blue); }
+  .mxn-color{ color: var(--text); }
   table.small-table td, table.small-table th{ white-space:nowrap; }
   .scroll-x{ overflow-x:auto; }
 
@@ -155,6 +157,8 @@
     <div class="tab" data-tab="export"><span class="es">Análisis de Exportación</span><span class="en">Export Analysis</span></div>
     <div class="tab" data-tab="distancia"><span class="es">Costeo por Distancia</span><span class="en">Distance Costing</span></div>
     <div class="tab" data-tab="acopio"><span class="es">Acopio Temporal</span><span class="en">Temporary Storage</span></div>
+    <div class="tab" data-tab="compra"><span class="es">Compra</span><span class="en">Purchase model</span></div>
+    <div class="tab" data-tab="venta"><span class="es">Venta</span><span class="en">Sale model</span></div>
   </div>
 
   <!-- TAB: FX -->
@@ -281,7 +285,7 @@
           <div class="item"><span class="lbl">$/kg MXN</span><span class="val" id="bitKgMXN">$0.00</span></div>
           <div class="item"><span class="lbl">$/kg USD</span><span class="val" id="bitKgUSD">US$0.00</span></div>
           <div class="item"><span class="lbl">$/(kg·km) MXN</span><span class="val" id="bitKgKmMXN">$0.0000</span></div>
-          <div class="item"><span class="lbl">$/(kg·km) USD</span><span class="val" id="bitKgKmUSD">US$0.0000</span></div>
+          <div class="item"><span class="lbl">$/(kg·km) USD</span><span class="val usd-color" id="bitKgKmUSD">US$0.0000</span></div>
         </div>
         <div class="foot-note" style="margin-top:8px;">Usa el peso total marcado aquí junto con el monto de transporte y los km ajustados capturados en "Costeo por Distancia".
           <span class="en-line">Uses the checked total weight here together with the transport amount and adjusted km entered in "Distance Costing".</span></div>
@@ -371,6 +375,8 @@
             <span class="dim" style="font-size:11px;">Refinerías conocidas / Known refineries:</span><br>
             <span class="refinery-chip" onclick="document.getElementById('destinoTxt').value='1201 Battery Blvd, McCarran, NV 89434, USA (Redwood Materials)'; document.getElementById('destinoSug').style.display='none';">Redwood Materials (NV, USA)</span>
             <span class="refinery-chip" onclick="document.getElementById('destinoTxt').value='Eastman Business Park, Rochester, NY, USA (Li-Cycle)'; document.getElementById('destinoSug').style.display='none';">Li-Cycle (NY, USA)</span>
+            <span class="refinery-chip" onclick="document.getElementById('destinoTxt').value='Ecolimpio, Ramos Arizpe, Coahuila, México'; document.getElementById('destinoSug').style.display='none';">Ecolimpio (Ramos Arizpe, Coah.)</span>
+            <span class="refinery-chip" onclick="document.getElementById('destinoTxt').value='Tiffany Towers, Jumeirah Lake Towers, Dubai, United Arab Emirates (Metaluck / MCC)'; document.getElementById('destinoSug').style.display='none';">Metaluck / MCC (Dubai, EAU)</span>
           </div>
         </div>
       </div>
@@ -393,8 +399,15 @@
       <div class="row3" style="margin-top:14px;">
         <div class="field"><label class="bi"><span class="es">Kilómetros</span><span class="en">Kilometers</span></label><input type="number" id="kmManual" value="0" onchange="calcDistancia()"></div>
         <div class="field">
-          <label class="bi"><span class="es">¿Aplicar 15% adicional?</span><span class="en">Apply extra 15%?</span></label>
-          <select id="aplicar15" onchange="calcDistancia()"><option value="no">No (0%)</option><option value="si">Sí / Yes (+15%)</option></select>
+          <label class="bi"><span class="es">Adicional por distancia</span><span class="en">Distance surcharge</span></label>
+          <select id="aplicar15" onchange="calcDistancia()">
+            <option value="0">0%</option>
+            <option value="5">5%</option>
+            <option value="10">10%</option>
+            <option value="15">15%</option>
+            <option value="20">20%</option>
+            <option value="30">30%</option>
+          </select>
         </div>
         <div class="field"><label class="bi"><span class="es">Km ajustados</span><span class="en">Adjusted km</span></label><input type="text" id="kmAjustados" readonly style="background:var(--purple-tint);"></div>
       </div>
@@ -406,9 +419,9 @@
       <table>
         <tbody>
           <tr><td><span class="bi"><span class="es">$/kg MXN</span></span></td><td class="num" id="distKgMXN">$0.00</td></tr>
-          <tr><td><span class="bi"><span class="es">$/kg USD</span></span></td><td class="num" id="distKgUSD">US$0.00</td></tr>
+          <tr><td><span class="bi"><span class="es">$/kg USD</span></span></td><td class="num usd-color" id="distKgUSD">US$0.00</td></tr>
           <tr><td><span class="bi"><span class="es">$/(kg·km) MXN</span></span></td><td class="num" id="distKgKmMXN">$0.0000</td></tr>
-          <tr><td><span class="bi"><span class="es">$/(kg·km) USD</span></span></td><td class="num" id="distKgKmUSD">US$0.0000</td></tr>
+          <tr><td><span class="bi"><span class="es">$/(kg·km) USD</span></span></td><td class="num usd-color" id="distKgKmUSD">US$0.0000</td></tr>
         </tbody>
       </table>
       <div class="foot-note">Ejemplo: $50/kg de transporte ÷ 10 km = $5.00/(kg·km). Es una métrica para comparar rutas, no reemplaza los gastos fijos de Exportación.
@@ -429,9 +442,133 @@
       </div>
       <table><tbody>
         <tr><td><span class="bi"><span class="es">Costo de acopio temporal (MXN)</span></span></td><td class="num" id="acopioMXN">$0.00</td></tr>
-        <tr><td><span class="bi"><span class="es">Costo de acopio temporal (USD)</span></span></td><td class="num" id="acopioUSD">US$0.00</td></tr>
+        <tr><td><span class="bi"><span class="es">Costo de acopio temporal (USD)</span></span></td><td class="num usd-color" id="acopioUSD">US$0.00</td></tr>
       </tbody></table>
       <div class="foot-note">Se cobra el mes completo aunque se use 1 o 30 días. <span class="en-line">Full month is billed even if used for only 1 day.</span></div>
+    </div>
+  </div>
+
+  <!-- TAB: COMPRA -->
+  <div class="panel" id="tab-compra">
+    <div class="card">
+      <div class="card-head"><h2><span class="es">Compra</span> <span class="en">Purchase model</span></h2>
+      <button class="btn-dl" onclick="exportCompra()">⬇ Descargar Excel / Download Excel</button></div>
+      <p class="desc">Costo por conseguir el material + gastos, contra el precio de disposición final, para calcular el margen.</p>
+
+      <div class="dim bi" style="margin-bottom:6px;"><span class="es" style="font-weight:700;">Materiales (hasta 5 líneas)</span><span class="en">Materials (up to 5 lines)</span></div>
+      <div class="scroll-x"><table>
+        <thead><tr>
+          <th><span class="bi"><span class="es">Material</span><span class="en">Material</span></span></th>
+          <th><span class="bi"><span class="es">Costo MXN/kg</span><span class="en">Cost MXN/kg</span></span></th>
+          <th><span class="bi"><span class="es">Cantidad (kg)</span><span class="en">Quantity (kg)</span></span></th>
+          <th><span class="bi"><span class="es">Total MXN</span><span class="en">Total MXN</span></span></th>
+          <th><span class="bi"><span class="es">Total USD</span><span class="en">Total USD</span></span></th>
+        </tr></thead>
+        <tbody id="compraMaterialesBody"></tbody>
+        <tfoot><tr class="total-row" id="compraMaterialesTotal"></tr></tfoot>
+      </table></div>
+
+      <div class="row3" style="margin-top:16px;">
+        <div class="field"><label class="bi"><span class="es">Gastos logísticos (MXN)</span><span class="en">Logistics costs (MXN)</span></label><input type="number" id="compraLogistica" value="0" onchange="calcCompra()"></div>
+        <div class="field"><label class="bi"><span class="es">Gastos operativos (MXN)</span><span class="en">Operating costs (MXN)</span></label><input type="number" id="compraOperativos" value="0" onchange="calcCompra()"></div>
+        <div class="field"><label class="bi"><span class="es">Gastos administrativos (MXN)</span><span class="en">Administrative costs (MXN)</span></label><input type="number" id="compraAdmin" value="0" onchange="calcCompra()"></div>
+      </div>
+
+      <table><tbody>
+        <tr class="total-row"><td>Subtotal de costos / Cost subtotal</td><td class="num" id="compraSubtotalMXN">$0.00</td><td class="num usd-color" id="compraSubtotalUSD">US$0.00</td></tr>
+      </tbody></table>
+
+      <div class="row2" style="margin-top:16px;">
+        <div class="field"><label class="bi"><span class="es">Precio de disposición final (MXN/kg)</span><span class="en">Final disposal price (MXN/kg)</span></label><input type="number" id="compraDisposicion" value="0" onchange="calcCompra()"></div>
+        <div class="field"><label class="bi"><span class="es">% de ganancia (sobre disposición final)</span><span class="en">Profit % (over final disposal price)</span></label>
+          <select id="compraPct" onchange="calcCompra()">
+            <option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option>
+            <option value="30" selected>30%</option><option value="35">35%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="scroll-x"><table>
+        <thead><tr>
+          <th><span class="bi"><span class="es">Concepto</span><span class="en">Item</span></span></th>
+          <th><span class="bi"><span class="es">MXN</span></span></th>
+          <th><span class="bi"><span class="es">USD</span></span></th>
+        </tr></thead>
+        <tbody id="compraMargenBody"></tbody>
+      </table></div>
+
+      <div class="card" style="margin-top:16px; background:var(--purple-tint); border:none;">
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+          <div><span class="margin-flag" id="compraMarginFlag">🟡</span></div>
+          <div>
+            <div class="dim bi"><span class="es" style="font-weight:600;">Margen real sobre disposición final</span><span class="en">Real margin over disposal price</span></div>
+            <div class="margin-pct" id="compraMarginPct" style="color:var(--amber-warn);">0.0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dim bi" style="margin:18px 0 6px;"><span class="es" style="font-weight:700;">Punto de equilibrio</span><span class="en">Break-even point</span></div>
+      <div id="compraChart"></div>
+      <div class="foot-note">La línea plana es el Subtotal de costos; la línea que sube es el Total (disposición final + ganancia) en cada % posible. El punto marcado es el % que elegiste arriba.
+        <span class="en-line">The flat line is the cost subtotal; the rising line is the Total (disposal price + profit) at each possible %. The marked point is the % you selected above.</span></div>
+    </div>
+  </div>
+
+  <!-- TAB: VENTA -->
+  <div class="panel" id="tab-venta">
+    <div class="card">
+      <div class="card-head"><h2><span class="es">Venta</span> <span class="en">Sale model</span></h2>
+      <button class="btn-dl" onclick="exportVenta()">⬇ Descargar Excel / Download Excel</button></div>
+      <p class="desc">El mismo proceso que Compra, pero al revés: parte de lo que te pagan por material (venta), suma tu ganancia, resta tus gastos, y te dice cuánto puedes pagar por kg al comprar.</p>
+
+      <div class="dim bi" style="margin-bottom:6px;"><span class="es" style="font-weight:700;">Materiales (hasta 5 líneas)</span><span class="en">Materials (up to 5 lines)</span></div>
+      <div class="scroll-x"><table>
+        <thead><tr>
+          <th><span class="bi"><span class="es">Material</span><span class="en">Material</span></span></th>
+          <th><span class="bi"><span class="es">Venta $/kg</span><span class="en">Sale $/kg</span></span></th>
+          <th><span class="bi"><span class="es">Cantidad (kg)</span><span class="en">Quantity (kg)</span></span></th>
+          <th><span class="bi"><span class="es">Total MXN</span><span class="en">Total MXN</span></span></th>
+          <th><span class="bi"><span class="es">Total USD</span><span class="en">Total USD</span></span></th>
+        </tr></thead>
+        <tbody id="ventaMaterialesBody"></tbody>
+        <tfoot><tr class="total-row" id="ventaMaterialesTotal"></tr></tfoot>
+      </table></div>
+
+      <div class="field" style="max-width:260px; margin-top:14px;">
+        <label class="bi"><span class="es">% de ganancia (sobre el subtotal de venta)</span><span class="en">Profit % (over the sale subtotal)</span></label>
+        <select id="ventaPct" onchange="calcVenta()">
+          <option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option>
+          <option value="30" selected>30%</option><option value="35">35%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option>
+        </select>
+      </div>
+
+      <div class="row3" style="margin-top:14px;">
+        <div class="field"><label class="bi"><span class="es">Gastos logísticos (MXN)</span><span class="en">Logistics costs (MXN)</span></label><input type="number" id="ventaLogistica" value="0" onchange="calcVenta()"></div>
+        <div class="field"><label class="bi"><span class="es">Gastos operativos (MXN)</span><span class="en">Operating costs (MXN)</span></label><input type="number" id="ventaOperativos" value="0" onchange="calcVenta()"></div>
+        <div class="field"><label class="bi"><span class="es">Gastos administrativos (MXN)</span><span class="en">Administrative costs (MXN)</span></label><input type="number" id="ventaAdmin" value="0" onchange="calcVenta()"></div>
+      </div>
+
+      <div class="scroll-x"><table>
+        <thead><tr>
+          <th><span class="bi"><span class="es">Concepto</span><span class="en">Item</span></span></th>
+          <th><span class="bi"><span class="es">MXN</span></span></th>
+          <th><span class="bi"><span class="es">USD</span></span></th>
+        </tr></thead>
+        <tbody id="ventaBody"></tbody>
+      </table></div>
+
+      <div class="dim bi" style="margin:18px 0 6px;"><span class="es" style="font-weight:700;">Costo de compra resultante por material</span><span class="en">Resulting purchase cost per material</span></div>
+      <div class="scroll-x"><table>
+        <thead><tr>
+          <th><span class="bi"><span class="es">Material</span><span class="en">Material</span></span></th>
+          <th><span class="bi"><span class="es">Cantidad (kg)</span><span class="en">Quantity (kg)</span></span></th>
+          <th><span class="bi"><span class="es">Costo de compra MXN/kg</span><span class="en">Purchase cost MXN/kg</span></span></th>
+          <th><span class="bi"><span class="es">Costo de compra USD/kg</span><span class="en">Purchase cost USD/kg</span></span></th>
+        </tr></thead>
+        <tbody id="ventaResultadoBody"></tbody>
+      </table></div>
+      <div class="foot-note">La tarifa de compra resultante es una sola (repartida entre los kg totales recolectados) y se muestra aplicada a cada material del listado de arriba.
+        <span class="en-line">The resulting purchase rate is a single blended rate (spread across the total kg collected), shown applied to each material in the list above.</span></div>
     </div>
   </div>
 
@@ -514,6 +651,9 @@ let DIST_KM_ADJ = 0;
 const fmtMXN = n => "$" + (n||0).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2});
 const fmtUSD = n => "US$" + (n||0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
 const fmtKg = n => (n||0).toLocaleString('es-MX', {maximumFractionDigits:0});
+// Envoltorios de color: MXN en negro/texto normal, USD en azul — para usar dentro de innerHTML
+const spanMXN = n => `<span class="mxn-color">${fmtMXN(n)}</span>`;
+const spanUSD = n => `<span class="usd-color">${fmtUSD(n)}</span>`;
 
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
@@ -556,9 +696,9 @@ function renderPricing(){
     body.innerHTML += `<tr>
       <td>${p.chem}</td><td>${p.tipo}</td>
       <td class="input-cell"><input type="number" step="0.01" value="${p.compra.toFixed(2)}" onchange="PRICING[${i}].compra=parseFloat(this.value)||0;recalcAll();"></td>
-      <td class="num">${fmtUSD(p.compra/FX)}</td>
+      <td class="num">${spanUSD(p.compra/FX)}</td>
       <td class="input-cell"><input type="number" step="0.01" value="${p.venta.toFixed(2)}" onchange="PRICING[${i}].venta=parseFloat(this.value)||0;recalcAll();"></td>
-      <td class="num">${fmtUSD(p.venta/FX)}</td>
+      <td class="num">${spanUSD(p.venta/FX)}</td>
     </tr>`;
   });
 }
@@ -571,9 +711,9 @@ function renderCatalogo(){
       <td class="input-cell"><input type="text" value="${p.chem}" onchange="CATALOGO[${i}].chem=this.value;renderCatalogo();renderBitacora();"></td>
       <td class="input-cell"><input type="text" value="${p.tipo}" onchange="CATALOGO[${i}].tipo=this.value;renderCatalogo();renderBitacora();"></td>
       <td class="input-cell"><input type="number" step="0.01" value="${p.compra.toFixed(2)}" onchange="CATALOGO[${i}].compra=parseFloat(this.value)||0;recalcAll();"></td>
-      <td class="num">${fmtUSD(p.compra/FX)}</td>
+      <td class="num">${spanUSD(p.compra/FX)}</td>
       <td class="input-cell"><input type="number" step="0.01" value="${p.venta.toFixed(2)}" onchange="CATALOGO[${i}].venta=parseFloat(this.value)||0;recalcAll();"></td>
-      <td class="num">${fmtUSD(p.venta/FX)}</td>
+      <td class="num">${spanUSD(p.venta/FX)}</td>
       <td><button class="btn small ghost" onclick="removeCatalogRow(${i})">✕</button></td>
     </tr>`;
   });
@@ -620,8 +760,8 @@ function renderBitacora(){
         <div class="bitacora-summary">
           <div class="item"><span class="lbl">Compra MXN/kg</span><span class="val">${fmtMXN(compraKg)}</span></div>
           <div class="item"><span class="lbl">Venta MXN/kg</span><span class="val">${fmtMXN(ventaKg)}</span></div>
-          <div class="item"><span class="lbl">Total Compra</span><span class="val">${fmtMXN(totCompraMXN)} · ${fmtUSD(totCompraMXN/FX)}</span></div>
-          <div class="item"><span class="lbl">Total Venta</span><span class="val">${fmtMXN(totVentaMXN)} · ${fmtUSD(totVentaMXN/FX)}</span></div>
+          <div class="item"><span class="lbl">Total Compra</span><span class="val">${fmtMXN(totCompraMXN)} · ${spanUSD(totCompraMXN/FX)}</span></div>
+          <div class="item"><span class="lbl">Total Venta</span><span class="val">${fmtMXN(totVentaMXN)} · ${spanUSD(totVentaMXN/FX)}</span></div>
         </div>`;
       cont.appendChild(card);
     });
@@ -668,8 +808,8 @@ function renderBitacora(){
         <div class="bitacora-summary">
           <div class="item"><span class="lbl">Compra MXN/kg</span><span class="val">${fmtMXN(compraKg)}</span></div>
           <div class="item"><span class="lbl">Venta MXN/kg</span><span class="val">${fmtMXN(ventaKg)}</span></div>
-          <div class="item"><span class="lbl">Total Compra</span><span class="val">${fmtMXN(totCompraMXN)} · ${fmtUSD(totCompraMXN/FX)}</span></div>
-          <div class="item"><span class="lbl">Total Venta</span><span class="val">${fmtMXN(totVentaMXN)} · ${fmtUSD(totVentaMXN/FX)}</span></div>
+          <div class="item"><span class="lbl">Total Compra</span><span class="val">${fmtMXN(totCompraMXN)} · ${spanUSD(totCompraMXN/FX)}</span></div>
+          <div class="item"><span class="lbl">Total Venta</span><span class="val">${fmtMXN(totVentaMXN)} · ${spanUSD(totVentaMXN/FX)}</span></div>
         </div>
       `;
       cont.appendChild(card);
@@ -679,8 +819,8 @@ function renderBitacora(){
   let sumKg=0, sumCompra=0, sumVenta=0;
   BITACORA.forEach(row => { if(row.incl){ const mat=CATALOGO[row.matIdx]||CATALOGO[0]; sumKg+=row.peso; sumCompra+=row.peso*mat.compra; sumVenta+=row.peso*mat.venta; } });
   document.getElementById('totKg').textContent = fmtKg(sumKg) + ' kg';
-  document.getElementById('totCompraMXN').textContent = fmtMXN(sumCompra) + ' · ' + fmtUSD(sumCompra/FX);
-  document.getElementById('totVentaMXN').textContent = fmtMXN(sumVenta) + ' · ' + fmtUSD(sumVenta/FX);
+  document.getElementById('totCompraMXN').innerHTML = fmtMXN(sumCompra) + ' · ' + spanUSD(sumCompra/FX);
+  document.getElementById('totVentaMXN').innerHTML = fmtMXN(sumVenta) + ' · ' + spanUSD(sumVenta/FX);
 
   // metricas de transporte, tomadas de Costeo por Distancia
   const kgMXN = sumKg > 0 ? DIST_MONTO / sumKg : 0;
@@ -688,7 +828,7 @@ function renderBitacora(){
   const kgkmMXN = DIST_KM_ADJ > 0 ? kgMXN / DIST_KM_ADJ : 0;
   const kgkmUSD = DIST_KM_ADJ > 0 ? kgUSD / DIST_KM_ADJ : 0;
   document.getElementById('bitKgMXN').textContent = fmtMXN(kgMXN);
-  document.getElementById('bitKgUSD').textContent = fmtUSD(kgUSD);
+  document.getElementById('bitKgUSD').innerHTML = spanUSD(kgUSD);
   document.getElementById('bitKgKmMXN').textContent = '$' + kgkmMXN.toFixed(4);
   document.getElementById('bitKgKmUSD').textContent = 'US$' + kgkmUSD.toFixed(4);
 }
@@ -746,8 +886,8 @@ function calcExport(){
     <td colspan="3"></td></tr>`;
   ACQUISITION = COMPRA_RATE * kgBat;
   body.innerHTML += `<tr><td><span class="bi"><span class="es" style="font-weight:400;">Costo de Adquisición (Subtotal)</span><span class="en">Acquisition Cost (Subtotal)</span></span></td>
-    <td class="num">${fmtMXN(ACQUISITION)}</td><td class="num">${fmtUSD(ACQUISITION/FX)}</td>
-    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(COMPRA_RATE)}</td><td class="num">${fmtUSD(COMPRA_RATE/FX)}</td></tr>`;
+    <td class="num">${fmtMXN(ACQUISITION)}</td><td class="num">${spanUSD(ACQUISITION/FX)}</td>
+    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(COMPRA_RATE)}</td><td class="num">${spanUSD(COMPRA_RATE/FX)}</td></tr>`;
   body.innerHTML += `<tr><td class="dim" style="font-size:11px;" colspan="6">↳ este precio de compra viene de la Bitácora/Catálogo cuando envías líneas seleccionadas; puedes editarlo aquí manualmente también · this purchase rate comes from Bitácora/Catálogo when you send checked lines; you can also edit it here directly</td></tr>`;
 
   body.innerHTML += `<tr class="section-row"><td colspan="6">GASTOS LOGÍSTICOS (fijos) / LOGISTICS (fixed)</td></tr>`;
@@ -755,13 +895,13 @@ function calcExport(){
   LOGISTICS.forEach((item, i) => { logisticsTotal += item.amt; body.innerHTML += rowHTML(item.es, item.en, item.amt, kgBat, 'log'+i); });
   body.innerHTML += `<tr style="font-weight:600; font-style:italic;">
     <td>Subtotal logística / Logistics subtotal</td>
-    <td class="num">${fmtMXN(logisticsTotal)}</td><td class="num">${fmtUSD(logisticsTotal/FX)}</td>
-    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(logisticsTotal/kgBat)}</td><td class="num">${fmtUSD(logisticsTotal/kgBat/FX)}</td></tr>`;
+    <td class="num">${fmtMXN(logisticsTotal)}</td><td class="num">${spanUSD(logisticsTotal/FX)}</td>
+    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(logisticsTotal/kgBat)}</td><td class="num">${spanUSD(logisticsTotal/kgBat/FX)}</td></tr>`;
 
   const costoTotal = ACQUISITION + logisticsTotal;
   body.innerHTML += `<tr class="total-row"><td>COSTO TOTAL / TOTAL COST</td>
-    <td class="num">${fmtMXN(costoTotal)}</td><td class="num">${fmtUSD(costoTotal/FX)}</td>
-    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(costoTotal/kgBat)}</td><td class="num">${fmtUSD(costoTotal/kgBat/FX)}</td></tr>`;
+    <td class="num">${fmtMXN(costoTotal)}</td><td class="num">${spanUSD(costoTotal/FX)}</td>
+    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(costoTotal/kgBat)}</td><td class="num">${spanUSD(costoTotal/kgBat/FX)}</td></tr>`;
 
   body.innerHTML += `<tr class="section-row"><td colspan="6">VENTA / SALE</td></tr>`;
   body.innerHTML += `<tr><td>Precio de venta (MXN/kg) · Sale price</td>
@@ -769,13 +909,13 @@ function calcExport(){
     <td colspan="3"></td></tr>`;
   const ventaTotal = VENTA_RATE * kgBat;
   body.innerHTML += `<tr><td>Venta total del embarque / Total shipment sale</td>
-    <td class="num">${fmtMXN(ventaTotal)}</td><td class="num">${fmtUSD(ventaTotal/FX)}</td>
-    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(VENTA_RATE)}</td><td class="num">${fmtUSD(VENTA_RATE/FX)}</td></tr>`;
+    <td class="num">${fmtMXN(ventaTotal)}</td><td class="num">${spanUSD(ventaTotal/FX)}</td>
+    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(VENTA_RATE)}</td><td class="num">${spanUSD(VENTA_RATE/FX)}</td></tr>`;
 
   const margen = ventaTotal - costoTotal;
   body.innerHTML += `<tr class="margin-row"><td>MARGEN / MARGIN</td>
-    <td class="num">${fmtMXN(margen)}</td><td class="num">${fmtUSD(margen/FX)}</td>
-    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(margen/(kgBat||1))}</td><td class="num">${fmtUSD(margen/(kgBat||1)/FX)}</td></tr>`;
+    <td class="num">${fmtMXN(margen)}</td><td class="num">${spanUSD(margen/FX)}</td>
+    <td class="num">${fmtKg(kgBat)}</td><td class="num">${fmtMXN(margen/(kgBat||1))}</td><td class="num">${spanUSD(margen/(kgBat||1)/FX)}</td></tr>`;
 
   const pct = ventaTotal !== 0 ? margen/ventaTotal : 0;
   const pctEl = document.getElementById('marginPct'); const flagEl = document.getElementById('marginFlag');
@@ -788,8 +928,8 @@ function rowHTML(esName, enName, amt, kg, id){
   const perKgMXN = kg > 0 ? amt/kg : 0;
   return `<tr><td><span class="bi"><span class="es" style="font-weight:400;">${esName}</span><span class="en">${enName}</span></span></td>
     <td class="input-cell"><input type="number" step="0.01" value="${amt.toFixed(2)}" onchange="updateAmount('${id}', this.value)"></td>
-    <td class="num">${fmtUSD(amt/FX)}</td><td class="num">${fmtKg(kg)}</td>
-    <td class="num">${fmtMXN(perKgMXN)}</td><td class="num">${fmtUSD(perKgMXN/FX)}</td></tr>`;
+    <td class="num">${spanUSD(amt/FX)}</td><td class="num">${fmtKg(kg)}</td>
+    <td class="num">${fmtMXN(perKgMXN)}</td><td class="num">${spanUSD(perKgMXN/FX)}</td></tr>`;
 }
 function updateAmount(id, val){
   const v = parseFloat(val) || 0;
@@ -907,8 +1047,8 @@ async function calcularDistanciaGoogle(){
 }
 function calcDistancia(){
   const km = parseFloat(document.getElementById('kmManual').value) || 0;
-  const aplicar = document.getElementById('aplicar15').value === 'si';
-  const kmAdj = aplicar ? km * 1.15 : km;
+  const pctAdicional = parseFloat(document.getElementById('aplicar15').value) || 0;
+  const kmAdj = km * (1 + pctAdicional/100);
   document.getElementById('kmAjustados').value = kmAdj.toFixed(2) + ' km';
   const peso = parseFloat(document.getElementById('pesoDist').value) || 0;
   const monto = parseFloat(document.getElementById('montoDist').value) || 0;
@@ -917,7 +1057,7 @@ function calcDistancia(){
   const kgkmMXN = kmAdj > 0 ? kgMXN/kmAdj : 0;
   const kgkmUSD = kmAdj > 0 ? kgUSD/kmAdj : 0;
   document.getElementById('distKgMXN').textContent = fmtMXN(kgMXN);
-  document.getElementById('distKgUSD').textContent = fmtUSD(kgUSD);
+  document.getElementById('distKgUSD').innerHTML = spanUSD(kgUSD);
   document.getElementById('distKgKmMXN').textContent = '$' + kgkmMXN.toFixed(4);
   document.getElementById('distKgKmUSD').textContent = 'US$' + kgkmUSD.toFixed(4);
   DIST_MONTO = monto;
@@ -932,7 +1072,7 @@ function calcAcopio(){
   const meses = parseFloat(document.getElementById('mesesAcopio').value) || 0;
   const costoMXN = tarifa * kg * meses;
   document.getElementById('acopioMXN').textContent = fmtMXN(costoMXN);
-  document.getElementById('acopioUSD').textContent = fmtUSD(costoMXN / FX);
+  document.getElementById('acopioUSD').innerHTML = spanUSD(costoMXN / FX);
 }
 
 // ---------- DESCARGA A EXCEL (SheetJS, por pestaña) ----------
@@ -1119,8 +1259,8 @@ function exportDistancia(){
   const origen = document.getElementById('origenTxt').value;
   const destino = document.getElementById('destinoTxt').value;
   const km = parseFloat(document.getElementById('kmManual').value) || 0;
-  const aplicar = document.getElementById('aplicar15').value === 'si';
-  const kmAdj = aplicar ? km*1.15 : km;
+  const pctAdicional = parseFloat(document.getElementById('aplicar15').value) || 0;
+  const kmAdj = km * (1 + pctAdicional/100);
   const peso = parseFloat(document.getElementById('pesoDist').value) || 0;
   const monto = parseFloat(document.getElementById('montoDist').value) || 0;
   const kgMXN = peso>0 ? monto/peso : 0;
@@ -1132,7 +1272,7 @@ function exportDistancia(){
     ["Lugar de salida / Origin", origen],
     ["Lugar de llegada / Destination", destino],
     ["Kilómetros / Kilometers", km],
-    ["¿Aplicar 15% adicional? / Apply extra 15%?", aplicar?'Sí / Yes':'No'],
+    ["Adicional por distancia / Distance surcharge", pctAdicional + '%'],
     ["Km ajustados / Adjusted km", +kmAdj.toFixed(2)],
     ["Peso (kg) / Weight (kg)", peso],
     ["Monto total de transporte (MXN) / Total transport amount (MXN)", monto],
@@ -1162,7 +1302,246 @@ function exportAcopio(){
   downloadSheet('NIUNIU_AcopioTemporal.xlsx', 'AcopioTemporal', aoa);
 }
 
-function recalcAll(){ renderPricing(); renderCatalogo(); renderBitacora(); calcExport(); calcDistancia(); calcAcopio(); }
+// ---------- COMPRA ----------
+let COMPRA_MATERIALES = [
+  {matIdx:0, costo:0, cantidad:0},
+  {matIdx:0, costo:0, cantidad:0},
+  {matIdx:0, costo:0, cantidad:0},
+  {matIdx:0, costo:0, cantidad:0},
+  {matIdx:0, costo:0, cantidad:0},
+];
+
+function renderCompra(){
+  const body = document.getElementById('compraMaterialesBody'); body.innerHTML = '';
+  let sumMXN = 0;
+  COMPRA_MATERIALES.forEach((line, i) => {
+    const mat = CATALOGO[line.matIdx] || CATALOGO[0];
+    const totMXN = line.costo * line.cantidad;
+    sumMXN += totMXN;
+    let options = CATALOGO.map((c,ci) => `<option value="${ci}" ${ci===line.matIdx?'selected':''}>${c.chem} | ${c.tipo}</option>`).join('');
+    body.innerHTML += `<tr>
+      <td class="input-cell"><select onchange="COMPRA_MATERIALES[${i}].matIdx=parseInt(this.value);renderCompra();">${options}</select></td>
+      <td class="input-cell"><input type="number" step="0.01" value="${line.costo}" onchange="COMPRA_MATERIALES[${i}].costo=parseFloat(this.value)||0;renderCompra();"></td>
+      <td class="input-cell"><input type="number" value="${line.cantidad}" onchange="COMPRA_MATERIALES[${i}].cantidad=parseFloat(this.value)||0;renderCompra();"></td>
+      <td class="num">${fmtMXN(totMXN)}</td>
+      <td class="num usd-color">${fmtUSD(totMXN/FX)}</td>
+    </tr>`;
+  });
+  document.getElementById('compraMaterialesTotal').innerHTML = `
+    <td>Subtotal materiales / Materials subtotal</td><td></td><td></td>
+    <td class="num">${fmtMXN(sumMXN)}</td><td class="num usd-color">${fmtUSD(sumMXN/FX)}</td>`;
+  calcCompra();
+}
+
+function calcCompra(){
+  let sumMateriales = 0, sumKgMateriales = 0;
+  COMPRA_MATERIALES.forEach(l => { sumMateriales += l.costo * l.cantidad; sumKgMateriales += l.cantidad; });
+  const logistica = parseFloat(document.getElementById('compraLogistica').value) || 0;
+  const operativos = parseFloat(document.getElementById('compraOperativos').value) || 0;
+  const admin = parseFloat(document.getElementById('compraAdmin').value) || 0;
+  const subtotal = sumMateriales + logistica + operativos + admin;
+  document.getElementById('compraSubtotalMXN').textContent = fmtMXN(subtotal);
+  document.getElementById('compraSubtotalUSD').innerHTML = spanUSD(subtotal/FX);
+
+  const disposicionKg = parseFloat(document.getElementById('compraDisposicion').value) || 0; // MXN/kg
+  const disposicionMonto = disposicionKg * sumKgMateriales; // se escala con el kg total capturado en las 5 lineas
+  const pct = parseFloat(document.getElementById('compraPct').value) || 0;
+  const ganancia = disposicionMonto * (pct/100);
+  const total = disposicionMonto + ganancia;
+  const margenReal = disposicionMonto - subtotal;
+  const pctMargenReal = disposicionMonto !== 0 ? margenReal/disposicionMonto : 0;
+
+  const body = document.getElementById('compraMargenBody'); body.innerHTML = '';
+  body.innerHTML += `<tr><td>Kg totales capturados (5 líneas) / Total kg captured</td><td class="num">${fmtKg(sumKgMateriales)} kg</td><td></td></tr>`;
+  body.innerHTML += `<tr><td>Precio de disposición final (${fmtMXN(disposicionKg)}/kg) × kg / Final disposal price × kg</td><td class="num">${fmtMXN(disposicionMonto)}</td><td class="num usd-color">${spanUSD(disposicionMonto/FX)}</td></tr>`;
+  body.innerHTML += `<tr><td>Ganancia deseada (${pct}% s/disposición) / Desired profit</td><td class="num">${fmtMXN(ganancia)}</td><td class="num usd-color">${spanUSD(ganancia/FX)}</td></tr>`;
+  body.innerHTML += `<tr class="total-row"><td>TOTAL (disposición + ganancia) / TOTAL</td><td class="num">${fmtMXN(total)}</td><td class="num">${spanUSD(total/FX)}</td></tr>`;
+  body.innerHTML += `<tr><td>Subtotal de costos / Cost subtotal</td><td class="num">${fmtMXN(subtotal)}</td><td class="num usd-color">${spanUSD(subtotal/FX)}</td></tr>`;
+  body.innerHTML += `<tr class="margin-row"><td>Margen real (disposición − subtotal) / Real margin</td><td class="num">${fmtMXN(margenReal)}</td><td class="num">${spanUSD(margenReal/FX)}</td></tr>`;
+
+  const pctEl = document.getElementById('compraMarginPct'); const flagEl = document.getElementById('compraMarginFlag');
+  pctEl.textContent = (pctMargenReal*100).toFixed(1) + '%';
+  if(pctMargenReal >= 0.4){ pctEl.style.color = 'var(--green)'; flagEl.textContent = '🟢'; }
+  else if(pctMargenReal >= 0){ pctEl.style.color = 'var(--amber-warn)'; flagEl.textContent = '🟡'; }
+  else { pctEl.style.color = 'var(--red)'; flagEl.textContent = '🔴'; }
+
+  drawBreakEvenChart(subtotal, disposicionMonto, pct);
+}
+
+function drawBreakEvenChart(subtotal, disposicion, selectedPct){
+  const pcts = [10,15,20,25,30,35,40,45,50];
+  const totals = pcts.map(p => disposicion * (1 + p/100));
+  const maxVal = Math.max(subtotal, ...totals, 1);
+  const W = 640, H = 220, padL = 60, padR = 20, padT = 16, padB = 30;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const xFor = i => padL + (i/(pcts.length-1)) * plotW;
+  const yFor = v => padT + plotH - (v/maxVal) * plotH;
+
+  const subtotalY = yFor(subtotal);
+  const totalPoints = totals.map((v,i) => `${xFor(i)},${yFor(v)}`).join(' ');
+  const selIdx = pcts.indexOf(selectedPct);
+  const selX = selIdx>=0 ? xFor(selIdx) : xFor(0);
+  const selY = selIdx>=0 ? yFor(totals[selIdx]) : yFor(totals[0]);
+  const gap = (selIdx>=0 ? totals[selIdx] : totals[0]) - subtotal;
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" style="width:100%; height:auto; max-width:640px; font-family:Inter,sans-serif;">`;
+  // ejes
+  svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="var(--line)" stroke-width="1"/>`;
+  svg += `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="var(--line)" stroke-width="1"/>`;
+  // linea subtotal (plana)
+  svg += `<line x1="${padL}" y1="${subtotalY}" x2="${W-padR}" y2="${subtotalY}" stroke="var(--red)" stroke-width="2" stroke-dasharray="5,4"/>`;
+  svg += `<text x="${W-padR}" y="${subtotalY-6}" text-anchor="end" font-size="10" fill="var(--red)">Subtotal costos</text>`;
+  // linea total (creciente)
+  svg += `<polyline points="${totalPoints}" fill="none" stroke="var(--purple)" stroke-width="2.5"/>`;
+  pcts.forEach((p,i) => { svg += `<circle cx="${xFor(i)}" cy="${yFor(totals[i])}" r="3" fill="var(--purple)"/>`; });
+  // etiquetas eje X
+  pcts.forEach((p,i) => { svg += `<text x="${xFor(i)}" y="${H-padB+14}" text-anchor="middle" font-size="9" fill="var(--text-dim)">${p}%</text>`; });
+  // marcador del % seleccionado
+  svg += `<line x1="${selX}" y1="${padT}" x2="${selX}" y2="${H-padB}" stroke="var(--amber-warn)" stroke-width="1.5" stroke-dasharray="3,3"/>`;
+  svg += `<circle cx="${selX}" cy="${selY}" r="6" fill="var(--amber-warn)" stroke="#fff" stroke-width="1.5"/>`;
+  svg += `<text x="${selX}" y="${padT-2}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--amber-warn)">Seleccionado: ${selectedPct}%</text>`;
+  svg += `</svg>`;
+  svg += `<div style="text-align:center; font-size:13px; margin-top:6px;"><b>Margen de diferencia en ${selectedPct}%:</b> ${fmtMXN(gap)} · ${fmtUSD(gap/FX)}</div>`;
+  document.getElementById('compraChart').innerHTML = svg;
+}
+
+function exportCompra(){
+  let sumMateriales = 0, sumKgMateriales = 0;
+  const aoa = [["Compra / Purchase model"], [], ["Material","Costo MXN/kg","Cantidad kg","Total MXN","Total USD"]];
+  COMPRA_MATERIALES.forEach(l => {
+    const mat = CATALOGO[l.matIdx] || CATALOGO[0];
+    const tot = l.costo*l.cantidad; sumMateriales += tot; sumKgMateriales += l.cantidad;
+    aoa.push([mat.chem+' | '+mat.tipo, l.costo, l.cantidad, tot, +(tot/FX).toFixed(2)]);
+  });
+  const logistica = parseFloat(document.getElementById('compraLogistica').value) || 0;
+  const operativos = parseFloat(document.getElementById('compraOperativos').value) || 0;
+  const admin = parseFloat(document.getElementById('compraAdmin').value) || 0;
+  const subtotal = sumMateriales + logistica + operativos + admin;
+  const disposicionKg = parseFloat(document.getElementById('compraDisposicion').value) || 0;
+  const disposicionMonto = disposicionKg * sumKgMateriales;
+  const pct = parseFloat(document.getElementById('compraPct').value) || 0;
+  const ganancia = disposicionMonto*(pct/100);
+  const total = disposicionMonto+ganancia;
+  const margenReal = disposicionMonto - subtotal;
+  aoa.push([]);
+  aoa.push(["Gastos logísticos / Logistics", logistica]);
+  aoa.push(["Gastos operativos / Operating", operativos]);
+  aoa.push(["Gastos administrativos / Administrative", admin]);
+  aoa.push(["Subtotal de costos / Cost subtotal", subtotal, +(subtotal/FX).toFixed(2)]);
+  aoa.push([]);
+  aoa.push(["Kg totales (5 líneas) / Total kg", sumKgMateriales]);
+  aoa.push(["Precio de disposición final (MXN/kg) / Final disposal price", disposicionKg]);
+  aoa.push(["Monto de disposición (rate × kg) / Disposal amount", disposicionMonto, +(disposicionMonto/FX).toFixed(2)]);
+  aoa.push(["% de ganancia / Profit %", pct+'%']);
+  aoa.push(["Ganancia / Profit", ganancia, +(ganancia/FX).toFixed(2)]);
+  aoa.push(["TOTAL / TOTAL", total, +(total/FX).toFixed(2)]);
+  aoa.push(["Margen real / Real margin", margenReal, +(margenReal/FX).toFixed(2)]);
+  aoa.push(["% Margen real / Real margin %", disposicionMonto?((margenReal/disposicionMonto)*100).toFixed(1)+'%':'0%']);
+  downloadSheet('NIUNIU_Compra.xlsx', 'Compra', aoa);
+}
+
+// ---------- VENTA (mismo proceso que Compra, pero al reves) ----------
+let VENTA_MATERIALES = [
+  {matIdx:0, venta:0, cantidad:0},
+  {matIdx:0, venta:0, cantidad:0},
+  {matIdx:0, venta:0, cantidad:0},
+  {matIdx:0, venta:0, cantidad:0},
+  {matIdx:0, venta:0, cantidad:0},
+];
+
+function renderVentaMateriales(){
+  const body = document.getElementById('ventaMaterialesBody'); body.innerHTML = '';
+  let sumMXN = 0, sumKg = 0;
+  VENTA_MATERIALES.forEach((line, i) => {
+    const totMXN = line.venta * line.cantidad;
+    sumMXN += totMXN; sumKg += line.cantidad;
+    let options = CATALOGO.map((c,ci) => `<option value="${ci}" ${ci===line.matIdx?'selected':''}>${c.chem} | ${c.tipo}</option>`).join('');
+    body.innerHTML += `<tr>
+      <td class="input-cell"><select onchange="VENTA_MATERIALES[${i}].matIdx=parseInt(this.value);renderVentaMateriales();">${options}</select></td>
+      <td class="input-cell"><input type="number" step="0.01" value="${line.venta}" onchange="VENTA_MATERIALES[${i}].venta=parseFloat(this.value)||0;renderVentaMateriales();"></td>
+      <td class="input-cell"><input type="number" value="${line.cantidad}" onchange="VENTA_MATERIALES[${i}].cantidad=parseFloat(this.value)||0;renderVentaMateriales();"></td>
+      <td class="num">${fmtMXN(totMXN)}</td>
+      <td class="num usd-color">${fmtUSD(totMXN/FX)}</td>
+    </tr>`;
+  });
+  document.getElementById('ventaMaterialesTotal').innerHTML = `
+    <td>Subtotal de venta / Sale subtotal</td><td></td><td></td>
+    <td class="num">${fmtMXN(sumMXN)}</td><td class="num usd-color">${fmtUSD(sumMXN/FX)}</td>`;
+  calcVenta();
+}
+
+function calcVenta(){
+  let subtotalVenta = 0, sumKg = 0;
+  VENTA_MATERIALES.forEach(l => { subtotalVenta += l.venta * l.cantidad; sumKg += l.cantidad; });
+
+  const pct = parseFloat(document.getElementById('ventaPct').value) || 0;
+  const ganancia = subtotalVenta * (pct/100);
+  const total = subtotalVenta + ganancia;
+  const logistica = parseFloat(document.getElementById('ventaLogistica').value) || 0;
+  const operativos = parseFloat(document.getElementById('ventaOperativos').value) || 0;
+  const admin = parseFloat(document.getElementById('ventaAdmin').value) || 0;
+
+  let saldo = total;
+  const body = document.getElementById('ventaBody'); body.innerHTML = '';
+  body.innerHTML += `<tr><td>Subtotal de venta (5 líneas) / Sale subtotal</td><td class="num">${fmtMXN(subtotalVenta)}</td><td class="num usd-color">${spanUSD(subtotalVenta/FX)}</td></tr>`;
+  body.innerHTML += `<tr><td>(+) Ganancia (${pct}% s/subtotal) / Profit</td><td class="num">${fmtMXN(ganancia)}</td><td class="num usd-color">${spanUSD(ganancia/FX)}</td></tr>`;
+  body.innerHTML += `<tr class="total-row"><td>TOTAL / TOTAL</td><td class="num">${fmtMXN(total)}</td><td class="num">${spanUSD(total/FX)}</td></tr>`;
+  saldo -= logistica;
+  body.innerHTML += `<tr><td>(−) Gastos logísticos / Logistics costs</td><td class="num">-${fmtMXN(logistica)}</td><td class="num usd-color">-${fmtUSD(logistica/FX)}</td></tr>`;
+  saldo -= operativos;
+  body.innerHTML += `<tr><td>(−) Gastos operativos / Operating costs</td><td class="num">-${fmtMXN(operativos)}</td><td class="num usd-color">-${fmtUSD(operativos/FX)}</td></tr>`;
+  saldo -= admin;
+  body.innerHTML += `<tr><td>(−) Gastos administrativos / Administrative costs</td><td class="num">-${fmtMXN(admin)}</td><td class="num usd-color">-${fmtUSD(admin/FX)}</td></tr>`;
+  body.innerHTML += `<tr class="margin-row"><td>Saldo disponible para compra / Available for purchase</td><td class="num">${fmtMXN(saldo)}</td><td class="num">${spanUSD(saldo/FX)}</td></tr>`;
+  body.innerHTML += `<tr><td>÷ Cantidad total recolectada (5 líneas) / Total kg collected</td><td class="num">${fmtKg(sumKg)} kg</td><td></td></tr>`;
+
+  const costoResultanteMXN = sumKg > 0 ? saldo / sumKg : 0;
+  const costoResultanteUSD = costoResultanteMXN / FX;
+  body.innerHTML += `<tr class="total-row"><td>COSTO DE COMPRA RESULTANTE (MXN/kg) / RESULTING PURCHASE COST</td><td class="num">${fmtMXN(costoResultanteMXN)}/kg</td><td class="num">${spanUSD(costoResultanteUSD)}/kg</td></tr>`;
+
+  const resBody = document.getElementById('ventaResultadoBody'); resBody.innerHTML = '';
+  VENTA_MATERIALES.forEach(l => {
+    const mat = CATALOGO[l.matIdx] || CATALOGO[0];
+    resBody.innerHTML += `<tr>
+      <td>${mat.chem} | ${mat.tipo}</td>
+      <td class="num">${fmtKg(l.cantidad)}</td>
+      <td class="num">${fmtMXN(costoResultanteMXN)}</td>
+      <td class="num usd-color">${spanUSD(costoResultanteUSD)}</td>
+    </tr>`;
+  });
+}
+
+function exportVenta(){
+  let subtotalVenta = 0, sumKg = 0;
+  const aoa = [["Venta / Sale model"], [], ["Material","Venta $/kg","Cantidad kg","Total MXN","Total USD"]];
+  VENTA_MATERIALES.forEach(l => {
+    const mat = CATALOGO[l.matIdx] || CATALOGO[0];
+    const tot = l.venta*l.cantidad; subtotalVenta += tot; sumKg += l.cantidad;
+    aoa.push([mat.chem+' | '+mat.tipo, l.venta, l.cantidad, tot, +(tot/FX).toFixed(2)]);
+  });
+  const pct = parseFloat(document.getElementById('ventaPct').value) || 0;
+  const ganancia = subtotalVenta*(pct/100);
+  const total = subtotalVenta+ganancia;
+  const logistica = parseFloat(document.getElementById('ventaLogistica').value) || 0;
+  const operativos = parseFloat(document.getElementById('ventaOperativos').value) || 0;
+  const admin = parseFloat(document.getElementById('ventaAdmin').value) || 0;
+  const saldo = total - logistica - operativos - admin;
+  const costoResultanteMXN = sumKg > 0 ? saldo/sumKg : 0;
+  aoa.push([]);
+  aoa.push(["Subtotal de venta / Sale subtotal", subtotalVenta, +(subtotalVenta/FX).toFixed(2)]);
+  aoa.push(["% de ganancia / Profit %", pct+'%']);
+  aoa.push(["(+) Ganancia / Profit", ganancia, +(ganancia/FX).toFixed(2)]);
+  aoa.push(["TOTAL / TOTAL", total, +(total/FX).toFixed(2)]);
+  aoa.push(["(-) Gastos logísticos / Logistics costs", logistica]);
+  aoa.push(["(-) Gastos operativos / Operating costs", operativos]);
+  aoa.push(["(-) Gastos administrativos / Administrative costs", admin]);
+  aoa.push(["Saldo disponible para compra / Available for purchase", saldo, +(saldo/FX).toFixed(2)]);
+  aoa.push(["÷ Cantidad total recolectada (kg) / Total kg collected", sumKg]);
+  aoa.push(["COSTO DE COMPRA RESULTANTE (MXN/kg) / RESULTING PURCHASE COST", costoResultanteMXN, +(costoResultanteMXN/FX).toFixed(4)]);
+  downloadSheet('NIUNIU_Venta.xlsx', 'Venta', aoa);
+}
+
+function recalcAll(){ renderPricing(); renderCatalogo(); renderBitacora(); calcExport(); calcDistancia(); calcAcopio(); renderCompra(); renderVentaMateriales(); }
 recalcAll();
 </script>
 </body>
